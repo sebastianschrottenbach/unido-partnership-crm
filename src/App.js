@@ -17,6 +17,7 @@ import PartnerList from './components/Partners/PartnerList';
 import ImportExport from './components/Import/ImportExport';
 import PartnerDetail from './components/Partners/PartnerDetail';
 import NewPartner from './components/Partners/NewPartner'; // Import NewPartner component
+import ErrorBoundary from './components/ErrorBoundary';
 
 function App() {
   const [drawerOpen, setDrawerOpen] = React.useState(false);
@@ -42,7 +43,7 @@ function App() {
         alignItems: 'center'
       }}>
         <img 
-          src="https://www.unido.org/unido-logo-white.png" 
+          src="https://www.unido.org/sites/default/files/2022-12/unido-logo-white.png" 
           alt="UNIDO Logo" 
           style={{ height: '30px', marginRight: '10px' }} 
         />
@@ -80,7 +81,7 @@ function App() {
               </IconButton>
               <Box sx={{ display: 'flex', alignItems: 'center' }}>
                 <img 
-                  src="https://www.unido.org/unido-logo-white.png" 
+                  src="https://www.unido.org/sites/default/files/2022-12/unido-logo-white.png" 
                   alt="UNIDO Logo" 
                   style={{ height: '40px', marginRight: '16px' }} 
                 />
@@ -101,11 +102,31 @@ function App() {
           
           <Box component="main" sx={{ flexGrow: 1, py: 3, backgroundColor: '#f5f9ff' }}>
             <Switch>
-              <Route exact path="/" component={Dashboard} />
-              <Route exact path="/partners" component={PartnerList} />
-              <Route path="/partners/new" component={NewPartner} />
-              <Route path="/partners/:id" component={PartnerDetail} />
-              <Route path="/import-export" component={ImportExport} />
+              <Route exact path="/" render={() => (
+                <ErrorBoundary>
+                  <Dashboard />
+                </ErrorBoundary>
+              )} />
+              <Route exact path="/partners" render={() => (
+                <ErrorBoundary>
+                  <PartnerList />
+                </ErrorBoundary>
+              )} />
+              <Route path="/partners/new" render={() => (
+                <ErrorBoundary>
+                  <NewPartner />
+                </ErrorBoundary>
+              )} />
+              <Route path="/partners/:id" render={() => (
+                <ErrorBoundary>
+                  <PartnerDetail />
+                </ErrorBoundary>
+              )} />
+              <Route path="/import-export" render={() => (
+                <ErrorBoundary>
+                  <ImportExport />
+                </ErrorBoundary>
+              )} />
             </Switch>
           </Box>
           
