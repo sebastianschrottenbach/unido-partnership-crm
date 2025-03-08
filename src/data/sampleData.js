@@ -15,7 +15,58 @@ export const partnershipData = [
     engagements: [
       { date: "2023-06-01", type: "Meeting", notes: "Initial partnership discussion" },
       { date: "2023-08-15", type: "Event", notes: "Joint SDG Innovation Workshop" }
-    ]
+    ],
+    agreements: [
+      { 
+        type: "Memorandum of Understanding",
+        startDate: "2023-05-20",
+        endDate: "2026-05-19",
+        status: "Active",
+        description: "Framework agreement for digital transformation initiatives"
+      },
+      {
+        type: "Project Agreement",
+        startDate: "2023-07-10",
+        endDate: "2024-12-31",
+        status: "Active",
+        description: "Specific agreement for ICT capacity building in East Africa"
+      }
+    ],
+    projects: [
+      {
+        id: "PRJ-2023-05",
+        name: "Digital Skills for Youth",
+        location: "Kenya, Rwanda, Uganda",
+        budget: 850000,
+        sdgs: [4, 8, 9],
+        status: "In Progress"
+      },
+      {
+        id: "PRJ-2023-11",
+        name: "Smart Manufacturing Initiative",
+        location: "Global",
+        budget: 1250000,
+        sdgs: [9, 12],
+        status: "Planning"
+      }
+    ],
+    contributions: [
+      {
+        type: "Financial",
+        amount: 500000,
+        currency: "USD",
+        date: "2023-06-01",
+        purpose: "Digital Skills for Youth program funding"
+      },
+      {
+        type: "In-kind",
+        description: "Technical expertise - 3 full-time engineers for 6 months",
+        estimatedValue: 180000,
+        currency: "USD",
+        date: "2023-08-15"
+      }
+    ],
+    connections: [4, 5] // IDs of connected partners
   },
   {
     id: 2,

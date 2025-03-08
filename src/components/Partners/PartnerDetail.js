@@ -4,7 +4,8 @@ import {
   Container, Typography, Paper, Box, Grid, Chip, Button, 
   Tabs, Tab, Divider, List, ListItem, ListItemText, Card, 
   CardContent, TextField, IconButton, Avatar, Dialog, DialogTitle,
-  DialogContent, DialogActions, MenuItem, Select, FormControl, InputLabel
+  DialogContent, DialogActions, MenuItem, Select, FormControl, InputLabel,
+  Table, TableBody, TableCell, TableContainer, TableHead, TableRow
 } from '@mui/material';
 import { 
   ArrowBack, Edit, Delete, Add, Business, Public, Phone, 
@@ -391,8 +392,11 @@ const PartnerDetail = () => {
           <Paper sx={{ p: 3 }}>
             <Tabs value={tabValue} onChange={handleTabChange}>
               <Tab label="Activity Timeline" />
+              <Tab label="Agreements" />
+              <Tab label="Projects" />
+              <Tab label="Contributions" />
+              <Tab label="Connections" />
               <Tab label="Documents" />
-              <Tab label="Follow-ups" />
             </Tabs>
             
             <TabPanel value={tabValue} index={0}>
@@ -452,6 +456,211 @@ const PartnerDetail = () => {
             
             <TabPanel value={tabValue} index={1}>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
+                <Typography variant="h6">Partnership Agreements</Typography>
+                <Button startIcon={<Add />} variant="contained">
+                  Add Agreement
+                </Button>
+              </Box>
+              
+              {partner.agreements && partner.agreements.length > 0 ? (
+                <TableContainer>
+                  <Table size="small">
+                    <TableHead>
+                      <TableRow>
+                        <TableCell>Type</TableCell>
+                        <TableCell>Status</TableCell>
+                        <TableCell>Start Date</TableCell>
+                        <TableCell>End Date</TableCell>
+                        <TableCell>Description</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {partner.agreements.map((agreement, index) => (
+                        <TableRow key={index}>
+                          <TableCell>{agreement.type}</TableCell>
+                          <TableCell>
+                            <Chip 
+                              label={agreement.status} 
+                              color={agreement.status === 'Active' ? 'success' : 'default'}
+                              size="small"
+                            />
+                          </TableCell>
+                          <TableCell>{agreement.startDate}</TableCell>
+                          <TableCell>{agreement.endDate}</TableCell>
+                          <TableCell>{agreement.description}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              ) : (
+                <Typography variant="body1" color="text.secondary" align="center" sx={{ mt: 2 }}>
+                  No formal agreements recorded yet.
+                </Typography>
+              )}
+            </TabPanel>
+            
+            <TabPanel value={tabValue} index={2}>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
+                <Typography variant="h6">Projects</Typography>
+                <Button startIcon={<Add />} variant="contained">
+                  Add Project
+                </Button>
+              </Box>
+              
+              {partner.projects && partner.projects.length > 0 ? (
+                <Grid container spacing={2}>
+                  {partner.projects.map((project, index) => (
+                    <Grid item xs={12} md={6} key={index}>
+                      <Card>
+                        <CardContent>
+                          <Typography variant="h6" gutterBottom>
+                            {project.name}
+                          </Typography>
+                          <Typography variant="body2" color="text.secondary" gutterBottom>
+                            ID: {project.id}
+                          </Typography>
+                          <Typography variant="body2" paragraph>
+                            Location: {project.location}
+                          </Typography>
+                          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <Typography variant="body2">
+                              Budget: ${project.budget.toLocaleString()}
+                            </Typography>
+                            <Chip 
+                              label={project.status}
+                              color={project.status === 'In Progress' ? 'success' : 'primary'}
+                              size="small"
+                            />
+                          </Box>
+                          <Box sx={{ mt: 2 }}>
+                            {project.sdgs?.map(sdg => (
+                              <Chip 
+                                key={sdg} 
+                                label={`SDG ${sdg}`} 
+                                size="small" 
+                                sx={{ mr: 0.5, mb: 0.5 }}
+                              />
+                            ))}
+                          </Box>
+                        </CardContent>
+                      </Card>
+                    </Grid>
+                  ))}
+                </Grid>
+              ) : (
+                <Typography variant="body1" color="text.secondary" align="center" sx={{ mt: 2 }}>
+                  No projects recorded yet.
+                </Typography>
+              )}
+            </TabPanel>
+            
+            <TabPanel value={tabValue} index={3}>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
+                <Typography variant="h6">Financial & In-kind Contributions</Typography>
+                <Button startIcon={<Add />} variant="contained">
+                  Add Contribution
+                </Button>
+              </Box>
+              
+              {partner.contributions && partner.contributions.length > 0 ? (
+                <TableContainer>
+                  <Table size="small">
+                    <TableHead>
+                      <TableRow>
+                        <TableCell>Type</TableCell>
+                        <TableCell>Date</TableCell>
+                        <TableCell>Value</TableCell>
+                        <TableCell>Purpose/Description</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {partner.contributions.map((contribution, index) => (
+                        <TableRow key={index}>
+                          <TableCell>{contribution.type}</TableCell>
+                          <TableCell>{contribution.date}</TableCell>
+                          <TableCell>
+                            {contribution.type === 'Financial' 
+                              ? `${contribution.amount.toLocaleString()} ${contribution.currency}` 
+                              : contribution.estimatedValue 
+                                ? `~${contribution.estimatedValue.toLocaleString()} ${contribution.currency}`
+                                : 'N/A'
+                            }
+                          </TableCell>
+                          <TableCell>
+                            {contribution.purpose || contribution.description}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              ) : (
+                <Typography variant="body1" color="text.secondary" align="center" sx={{ mt: 2 }}>
+                  No contributions recorded yet.
+                </Typography>
+              )}
+            </TabPanel>
+            
+            <TabPanel value={tabValue} index={4}>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
+                <Typography variant="h6">Partner Connections</Typography>
+                <Button startIcon={<Add />} variant="contained">
+                  Add Connection
+                </Button>
+              </Box>
+              
+              {partner.connections && partner.connections.length > 0 ? (
+                <Grid container spacing={2}>
+                  {partner.connections.map(partnerId => {
+                    const connectedPartner = partners.find(p => p.id === partnerId);
+                    if (!connectedPartner) return null;
+                    
+                    return (
+                      <Grid item xs={12} sm={6} md={4} key={partnerId}>
+                        <Card 
+                          sx={{ cursor: 'pointer' }}
+                          onClick={() => history.push(`/partners/${partnerId}`)}
+                        >
+                          <CardContent>
+                            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                              <Avatar 
+                                sx={{ bgcolor: 'primary.main', mr: 2 }}
+                              >
+                                {connectedPartner.name.charAt(0)}
+                              </Avatar>
+                              <Box>
+                                <Typography variant="subtitle1">
+                                  {connectedPartner.name}
+                                </Typography>
+                                <Typography variant="body2" color="text.secondary">
+                                  {connectedPartner.type} • {connectedPartner.sector}
+                                </Typography>
+                              </Box>
+                            </Box>
+                            <Box sx={{ mt: 2 }}>
+                              <Typography variant="caption" color="text.secondary">
+                                Projects in common:
+                              </Typography>
+                              <Typography variant="body2">
+                                Digital Skills for Youth
+                              </Typography>
+                            </Box>
+                          </CardContent>
+                        </Card>
+                      </Grid>
+                    );
+                  })}
+                </Grid>
+              ) : (
+                <Typography variant="body1" color="text.secondary" align="center" sx={{ mt: 2 }}>
+                  No partner connections recorded.
+                </Typography>
+              )}
+            </TabPanel>
+            
+            <TabPanel value={tabValue} index={5}>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
                 <Typography variant="h6">Partnership Documents</Typography>
                 <Button startIcon={<Add />} variant="contained">
                   Add Document
@@ -460,18 +669,6 @@ const PartnerDetail = () => {
               <Typography variant="body1" color="text.secondary" align="center" sx={{ mt: 2 }}>
                 No documents uploaded yet.
                 </Typography>
-            </TabPanel>
-            
-            <TabPanel value={tabValue} index={2}>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
-                <Typography variant="h6">Follow-up Tasks</Typography>
-                <Button startIcon={<Add />} variant="contained">
-                  Add Follow-up
-                </Button>
-              </Box>
-              <Typography variant="body1" color="text.secondary" align="center" sx={{ mt: 2 }}>
-                No follow-up tasks scheduled.
-              </Typography>
             </TabPanel>
           </Paper>
         </Grid>
