@@ -1,5 +1,5 @@
 import React from 'react';
-import { HashRouter as Router, Route, Link, Switch } from 'react-router-dom';
+import { HashRouter as Router, Switch, Route, Link } from 'react-router-dom';
 import { 
   AppBar, Toolbar, Typography, Container, Box, Drawer, List, 
   ListItem, ListItemIcon, ListItemText, CssBaseline, IconButton 
@@ -101,11 +101,11 @@ function App() {
           
           <Box component="main" sx={{ flexGrow: 1, py: 3, backgroundColor: '#f5f9ff' }}>
             <Switch>
-              <Route exact path="/" element={<Dashboard />} />
-              <Route path="/partners" element={<PartnerList />} />
-              <Route path="/partners/:id" element={<PartnerDetail />} />
-              <Route path="/partners/new" element={<NewPartner />} /> // Add route for NewPartner component
-              <Route path="/import-export" element={<ImportExport />} />
+              <Route exact path="/" component={Dashboard} />
+              <Route exact path="/partners" component={PartnerList} />
+              <Route path="/partners/new" component={NewPartner} />
+              <Route path="/partners/:id" component={PartnerDetail} />
+              <Route path="/import-export" component={ImportExport} />
             </Switch>
           </Box>
           
