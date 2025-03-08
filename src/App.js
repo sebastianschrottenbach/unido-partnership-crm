@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Route, Switch, Link } from 'react-router-dom';
+import { HashRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import { 
   AppBar, Toolbar, Typography, Container, Box, Drawer, List, 
   ListItem, ListItemIcon, ListItemText, CssBaseline, IconButton 
@@ -65,7 +65,7 @@ function App() {
 
   return (
     <DataProvider>
-      <Router basename="/unido-partnership-crm">
+      <Router>
         <CssBaseline />
         <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
           <AppBar position="sticky">
@@ -100,13 +100,13 @@ function App() {
           </Drawer>
           
           <Box component="main" sx={{ flexGrow: 1, py: 3, backgroundColor: '#f5f9ff' }}>
-            <Switch>
-              <Route exact path="/" component={Dashboard} />
-              <Route path="/partners" component={PartnerList} />
+            <Routes>
+              <Route exact path="/" element={<Dashboard />} />
+              <Route path="/partners" element={<PartnerList />} />
               <Route path="/partners/:id" element={<PartnerDetail />} />
               <Route path="/partners/new" element={<NewPartner />} /> // Add route for NewPartner component
-              <Route path="/import-export" component={ImportExport} />
-            </Switch>
+              <Route path="/import-export" element={<ImportExport />} />
+            </Routes>
           </Box>
           
           <Box component="footer" sx={{ py: 2, px: 2, mt: 'auto', backgroundColor: '#009cdc', color: '#ffffff' }}>
