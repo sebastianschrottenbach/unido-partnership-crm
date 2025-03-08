@@ -1,5 +1,5 @@
 import React from 'react';
-import { HashRouter as Router, Routes, Route, Link } from 'react-router-dom';
+import { HashRouter as Router, Route, Link, Switch } from 'react-router-dom';
 import { 
   AppBar, Toolbar, Typography, Container, Box, Drawer, List, 
   ListItem, ListItemIcon, ListItemText, CssBaseline, IconButton 
@@ -42,7 +42,7 @@ function App() {
         alignItems: 'center'
       }}>
         <img 
-          src="https://www.unido.org/sites/default/files/2022-12/unido-logo-white.png" 
+          src="https://www.unido.org/unido-logo-white.png" 
           alt="UNIDO Logo" 
           style={{ height: '30px', marginRight: '10px' }} 
         />
@@ -80,7 +80,7 @@ function App() {
               </IconButton>
               <Box sx={{ display: 'flex', alignItems: 'center' }}>
                 <img 
-                  src="https://www.unido.org/sites/default/files/2022-12/unido-logo-white.png" 
+                  src="https://www.unido.org/unido-logo-white.png" 
                   alt="UNIDO Logo" 
                   style={{ height: '40px', marginRight: '16px' }} 
                 />
@@ -100,13 +100,13 @@ function App() {
           </Drawer>
           
           <Box component="main" sx={{ flexGrow: 1, py: 3, backgroundColor: '#f5f9ff' }}>
-            <Routes>
+            <Switch>
               <Route exact path="/" element={<Dashboard />} />
               <Route path="/partners" element={<PartnerList />} />
               <Route path="/partners/:id" element={<PartnerDetail />} />
               <Route path="/partners/new" element={<NewPartner />} /> // Add route for NewPartner component
               <Route path="/import-export" element={<ImportExport />} />
-            </Routes>
+            </Switch>
           </Box>
           
           <Box component="footer" sx={{ py: 2, px: 2, mt: 'auto', backgroundColor: '#009cdc', color: '#ffffff' }}>
