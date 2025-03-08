@@ -42,7 +42,7 @@ function App() {
         alignItems: 'center'
       }}>
         <img 
-          src={`${process.env.PUBLIC_URL}/unido-logo-white.png`} 
+          src="https://www.unido.org/sites/default/files/2022-12/unido-logo-white.png" 
           alt="UNIDO Logo" 
           style={{ height: '30px', marginRight: '10px' }} 
         />
@@ -80,7 +80,7 @@ function App() {
               </IconButton>
               <Box sx={{ display: 'flex', alignItems: 'center' }}>
                 <img 
-                  src={`${process.env.PUBLIC_URL}/unido-logo-white.png`} 
+                  src="https://www.unido.org/sites/default/files/2022-12/unido-logo-white.png" 
                   alt="UNIDO Logo" 
                   style={{ height: '40px', marginRight: '16px' }} 
                 />

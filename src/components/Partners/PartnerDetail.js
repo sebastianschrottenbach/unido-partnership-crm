@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useHistory } from 'react-router-dom';
 import { 
   Container, Typography, Paper, Box, Grid, Chip, Button, 
   Tabs, Tab, Divider, List, ListItem, ListItemText, Card, 
@@ -44,7 +44,7 @@ function TabPanel(props) {
 
 const PartnerDetail = () => {
   const { id } = useParams();
-  const navigate = useNavigate();
+  const history = useHistory();
   const { partners, updatePartner, deletePartner } = useData();
   const [tabValue, setTabValue] = useState(0);
   const [editing, setEditing] = useState(false);
@@ -64,7 +64,7 @@ const PartnerDetail = () => {
     return (
       <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
         <Typography>Partner not found</Typography>
-        <Button startIcon={<ArrowBack />} onClick={() => navigate('/partners')}>
+        <Button startIcon={<ArrowBack />} onClick={() => history.push('/partners')}>
           Back to Partners
         </Button>
       </Container>
@@ -96,7 +96,7 @@ const PartnerDetail = () => {
   const handleDeleteConfirm = () => {
     deletePartner(partner.id);
     setConfirmDelete(false);
-    navigate('/partners');
+    history.push('/partners');
   };
   
   const handleActivitySubmit = () => {
@@ -123,7 +123,7 @@ const PartnerDetail = () => {
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
       {/* Header section with actions */}
       <Box sx={{ mb: 4, display: 'flex', justifyContent: 'space-between' }}>
-        <Button startIcon={<ArrowBack />} onClick={() => navigate('/partners')}>
+        <Button startIcon={<ArrowBack />} onClick={() => history.push('/partners')}>
           Back to Partners
         </Button>
         <Box>

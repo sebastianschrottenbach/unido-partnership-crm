@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useHistory } from 'react-router-dom';
 import {
   Container, Typography, Paper, Box, Grid, Button, TextField,
   FormControl, InputLabel, Select, MenuItem, Chip, OutlinedInput,
@@ -21,7 +21,7 @@ const MenuProps = {
 };
 
 const NewPartner = () => {
-  const navigate = useNavigate();
+  const history = useHistory();
   const { addPartner } = useData();
   const [newPartner, setNewPartner] = useState({
     name: '',
@@ -50,13 +50,13 @@ const NewPartner = () => {
     e.preventDefault();
     // Validation logic here
     addPartner(newPartner);
-    navigate('/partners');
+    history.push('/partners');
   };
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
       <Box sx={{ mb: 4, display: 'flex', justifyContent: 'space-between' }}>
-        <Button startIcon={<ArrowBack />} onClick={() => navigate('/partners')}>
+        <Button startIcon={<ArrowBack />} onClick={() => history.push('/partners')}>
           Back to Partners
         </Button>
       </Box>

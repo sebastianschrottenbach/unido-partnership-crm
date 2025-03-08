@@ -4,16 +4,16 @@ import {
 } from '@mui/material';
 import {
   People, Business, Public, AssignmentTurnedIn, Notifications, Timeline,
-  AccessTime, ArrowForward, Event
+  AccessTime, ArrowForward, Event, Add
 } from '@mui/icons-material';
-import { useNavigate } from 'react-router-dom';
+import { useHistory } from 'react-router-dom';
 import DashboardCard from './DashboardCard';
 import { PieChartComponent, BarChartComponent } from './PartnershipChart';
 import { useData } from '../../contexts/DataContext';
 
 const Dashboard = () => {
   const { partners } = useData();
-  const navigate = useNavigate();
+  const history = useHistory();
 
   // Calculate metrics for dashboard
   const metrics = useMemo(() => {
@@ -91,7 +91,7 @@ const Dashboard = () => {
               fullWidth
               variant="contained"
               startIcon={<Add />}
-              onClick={() => navigate('/partners/new')}
+              onClick={() => history.push('/partners/new')}
             >
               Add Partner
             </Button>
@@ -101,7 +101,7 @@ const Dashboard = () => {
               fullWidth
               variant="outlined"
               startIcon={<Event />}
-              onClick={() => navigate('/activities')}
+              onClick={() => history.push('/activities')}
             >
               Schedule Meeting
             </Button>
@@ -111,7 +111,7 @@ const Dashboard = () => {
               fullWidth
               variant="outlined"
               startIcon={<Notifications />}
-              onClick={() => navigate('/follow-ups')}
+              onClick={() => history.push('/follow-ups')}
             >
               View Follow-ups
             </Button>
@@ -121,7 +121,7 @@ const Dashboard = () => {
               fullWidth
               variant="outlined"
               startIcon={<Timeline />}
-              onClick={() => navigate('/reports')}
+              onClick={() => history.push('/reports')}
             >
               Generate Report
             </Button>
@@ -209,7 +209,7 @@ const Dashboard = () => {
               <Typography variant="h6">Recent Activities</Typography>
               <Button 
                 endIcon={<ArrowForward />}
-                onClick={() => navigate('/activities')}
+                onClick={() => history.push('/activities')}
               >
                 View All
               </Button>

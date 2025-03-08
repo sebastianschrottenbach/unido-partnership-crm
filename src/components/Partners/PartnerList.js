@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useHistory } from 'react-router-dom';
 import {
   Container, Typography, Paper, Table, TableBody, TableCell, TableContainer,
   TableHead, TableRow, TablePagination, Chip, TextField, InputAdornment,
@@ -26,7 +26,7 @@ const MenuProps = {
 };
 
 const PartnerList = () => {
-  const navigate = useNavigate();
+  const history = useHistory();
   const { partners } = useData();
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
@@ -325,7 +325,7 @@ const PartnerList = () => {
               <TableRow
                 key={partner.id}
                 hover
-                onClick={() => navigate(`/partners/${partner.id}`)}
+                onClick={() => history.push(`/partners/${partner.id}`)}
                 sx={{ cursor: 'pointer' }}
               >
                 <TableCell>{partner.name}</TableCell>
