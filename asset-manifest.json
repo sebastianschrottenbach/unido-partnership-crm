@@ -1,15 +1,15 @@
 {
   "files": {
     "main.css": "/unido-partnership-crm/static/css/main.e6c13ad2.css",
-    "main.js": "/unido-partnership-crm/static/js/main.9b6c6f59.js",
+    "main.js": "/unido-partnership-crm/static/js/main.f7c8c623.js",
     "static/js/453.3f299605.chunk.js": "/unido-partnership-crm/static/js/453.3f299605.chunk.js",
     "index.html": "/unido-partnership-crm/index.html",
     "main.e6c13ad2.css.map": "/unido-partnership-crm/static/css/main.e6c13ad2.css.map",
-    "main.9b6c6f59.js.map": "/unido-partnership-crm/static/js/main.9b6c6f59.js.map",
+    "main.f7c8c623.js.map": "/unido-partnership-crm/static/js/main.f7c8c623.js.map",
     "453.3f299605.chunk.js.map": "/unido-partnership-crm/static/js/453.3f299605.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.e6c13ad2.css",
-    "static/js/main.9b6c6f59.js"
+    "static/js/main.f7c8c623.js"
   ]
 }
