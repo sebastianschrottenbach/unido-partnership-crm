@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useHistory } from 'react-router-dom';
 import {
   Container, Typography, Paper, Box, Grid, Button, TextField,
-  FormControl, InputLabel, Select, MenuItem, Chip, OutlinedInput,
+  FormControl, InputLabel, Select, MenuItem, OutlinedInput,
   ListItemText, Checkbox
 } from '@mui/material';
 import { ArrowBack, Save } from '@mui/icons-material';
@@ -37,7 +37,6 @@ const NewPartner = () => {
     sdgAlignment: [],
     engagements: []
   });
-  const [errors, setErrors] = useState({});
 
   const handleChange = (field, value) => {
     setNewPartner({
@@ -74,8 +73,6 @@ const NewPartner = () => {
                 label="Partner Name"
                 value={newPartner.name}
                 onChange={(e) => handleChange('name', e.target.value)}
-                error={!!errors.name}
-                helperText={errors.name}
                 required
               />
             </Grid>

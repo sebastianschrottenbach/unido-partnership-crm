@@ -1,5 +1,5 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
-import { partnershipData } from '../data/sampleData';
+import { partnershipData, addExpiringAgreement } from '../data/sampleData';
 
 const DataContext = createContext();
 
@@ -51,6 +51,8 @@ export const DataProvider = ({ children }) => {
   };
 
   const resetToSampleData = () => {
+    // Ensure we have an expiring agreement for demo purposes
+    addExpiringAgreement();
     setPartners(partnershipData);
   };
 

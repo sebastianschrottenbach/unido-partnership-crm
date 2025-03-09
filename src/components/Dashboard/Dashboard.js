@@ -2,14 +2,17 @@ import React, { useState, useMemo, useCallback } from 'react';
 import { useHistory } from 'react-router-dom';
 import { 
   Box, Grid, Typography, Container, Paper, List, ListItem, ListItemText, 
-  Divider, Button, Chip, Tabs, Tab, FormControl, InputLabel, Select, MenuItem,
-  CircularProgress, ListItemAvatar, Avatar, AppBar, Collapse, IconButton, Tooltip
+  Divider, Button, Chip, FormControl, InputLabel, Select, MenuItem,
+  ListItemAvatar, Avatar, Collapse, IconButton, Tooltip
 } from '@mui/material';
 import { 
   People, Business, AttachMoney, Description, WarningAmber, 
-  Event, Category, Public, ZoomIn, ZoomOut, FilterList,
+  Event, Public, ZoomIn, FilterList, Refresh,
   ExpandMore, ExpandLess, Dashboard as DashboardIcon, PieChart as PieChartIcon,
-  BarChart as BarChartIcon, Info, Check, Warning
+  BarChart as BarChartIcon, Info, Check, Warning,
+  // Region specific icons
+  LocationCity, Language, EmojiFlags, PublicOff, Park, 
+  WbSunny, AcUnit, SouthAmerica, NorthEast
 } from '@mui/icons-material';
 import { 
   PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartTooltip, Legend, 
@@ -18,22 +21,29 @@ import {
 import DashboardCard from './DashboardCard';
 import { useData } from '../../contexts/DataContext';
 import NetworkVisualization from './NetworkVisualization/NetworkVisualization';
-import { enhanceNetworkData } from './NetworkVisualization/networkUtils';
-import unidoStaff from '../../data/unidoStaff';
-import OrganizationalHierarchy from './OrganizationalHierarchy/OrganizationalHierarchy';
-import { sdgs } from '../../data/sampleData';
+import { partnershipData, sdgs } from '../../data/sampleData';
 
 // Import utility functions
 import { 
-  processNetworkData, enhanceLocalNetworkData, daysUntil,
-  calculateTotalContributions, calculateActiveProjects, getUniqueCountries,
+  enhanceLocalNetworkData, daysUntil,
   getContributionTypeData, getSDGAlignmentData, getRegionalDistributionData,
   getSectorDistributionData, filterPartners, calculateDashboardMetrics
 } from './utils/dashboardUtils';
 import {
-  typeColors, nodeTypeColors, statusColors, regionColors, chartColors,
-  getSDGColor, getRegionColor, getPartnerTypeColor, getStatusColor, getChartColor
+  getSDGColor, getRegionColor, getChartColor, themeColors
 } from './utils/colorUtils';
+
+// Define region icons mapping for use across all components
+const regionIcons = {
+  'Europe': <LocationCity style={{ color: getRegionColor('Europe'), marginRight: 6 }} />,
+  'Africa': <WbSunny style={{ color: getRegionColor('Africa'), marginRight: 6 }} />,
+  'Asia': <Language style={{ color: getRegionColor('Asia'), marginRight: 6 }} />,
+  'North America': <NorthEast style={{ color: getRegionColor('North America'), marginRight: 6 }} />,
+  'Latin America': <SouthAmerica style={{ color: getRegionColor('Latin America'), marginRight: 6 }} />,
+  'Middle East': <Park style={{ color: getRegionColor('Middle East'), marginRight: 6 }} />,
+  'Oceania': <PublicOff style={{ color: getRegionColor('Oceania'), marginRight: 6 }} />,
+  'Global': <EmojiFlags style={{ color: getRegionColor('Global') || themeColors.primary, marginRight: 6 }} />
+};
 
 // Tab panel component
 function TabPanel(props) {
@@ -177,101 +187,137 @@ const DashboardHeader = ({ filters, onFilterChange, resetFilters, history }) => 
   );
 };
 
-// UNIDO Division Intelligence Panel component
+// UNIDO Organizational Units component
 const DivisionsPanel = ({ directorates, selectedDivision, setSelectedDivision }) => {
   return (
     <Box sx={{ mb: 4 }}>
       <Paper sx={{ p: 3, borderRadius: '8px', boxShadow: '0 2px 10px rgba(0,0,0,0.05)' }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
           <Business sx={{ color: '#009cdc', mr: 2 }} />
           <Typography variant="h6" sx={{ fontWeight: 600 }}>
-            UNIDO Divisions
+            Partners per Organizational Units
           </Typography>
-          <Tooltip title="Select a division to filter the dashboard data" arrow placement="right">
+          <Tooltip title="Select an organizational unit to filter the dashboard data" arrow placement="right">
             <Info sx={{ ml: 1, fontSize: 18, color: '#999999' }} />
           </Tooltip>
         </Box>
         
-        <Grid container spacing={2}>
-          {/* "All Divisions" card */}
-          <Grid item xs={6} sm={4} md={3} lg={2}>
-            <Paper 
-              elevation={selectedDivision === 'all' ? 3 : 1}
-              sx={{ 
-                p: 2, 
-                cursor: 'pointer', 
-                bgcolor: selectedDivision === 'all' ? 'rgba(0, 156, 220, 0.1)' : '#ffffff',
-                color: 'inherit',
-                borderLeft: '4px solid #009cdc',
-                height: '100%',
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'space-between',
-                transition: 'all 0.2s ease-in-out',
-                '&:hover': {
-                  boxShadow: '0 4px 10px rgba(0,0,0,0.07)',
-                  transform: selectedDivision === 'all' ? 'none' : 'translateY(-2px)',
-                }
-              }}
-              onClick={() => setSelectedDivision('all')}
-            >
-              <Typography variant="subtitle1" fontWeight="bold">All Divisions</Typography>
-              <Box>
-                <Typography variant="h5" color="#009cdc" fontWeight="medium">
-                  {directorates.reduce((sum, dir) => sum + dir.partnerCount, 0)}
-                </Typography>
-                <Typography variant="body2" color="#666666">Partners</Typography>
-              </Box>
-            </Paper>
-          </Grid>
+        {/* Compact selection with chips */}
+        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 1 }}>
+          <Chip
+            label={`All Units (${directorates.reduce((sum, dir) => sum + dir.partnerCount, 0)})`}
+            onClick={() => setSelectedDivision('all')}
+            color={selectedDivision === 'all' ? 'primary' : 'default'}
+            variant={selectedDivision === 'all' ? 'filled' : 'outlined'}
+            sx={{ fontWeight: selectedDivision === 'all' ? 600 : 400 }}
+          />
           
-          {/* Division cards - generated dynamically */}
           {directorates.map(directorate => (
-            <Grid item xs={6} sm={4} md={3} lg={2} key={directorate.id}>
-              <Paper 
-                elevation={selectedDivision === directorate.id ? 3 : 1}
-                sx={{ 
-                  p: 2, 
-                  cursor: 'pointer', 
-                  bgcolor: selectedDivision === directorate.id ? `${directorate.color}10` : '#ffffff',
-                  borderLeft: `4px solid ${directorate.color}`,
-                  height: '100%',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  justifyContent: 'space-between',
-                  transition: 'all 0.2s ease-in-out',
-                  '&:hover': {
-                    boxShadow: '0 4px 10px rgba(0,0,0,0.07)',
-                    transform: selectedDivision === directorate.id ? 'none' : 'translateY(-2px)',
-                  }
-                }}
-                onClick={() => setSelectedDivision(directorate.id)}
-              >
-                <Typography variant="subtitle1" fontWeight="bold">{directorate.name}</Typography>
-                <Box>
-                  <Typography variant="h5" color={directorate.color} fontWeight="medium">
-                    {directorate.partnerCount}
-                  </Typography>
-                  <Typography variant="body2" color="#666666">Partners</Typography>
-                </Box>
-              </Paper>
-            </Grid>
+            <Chip
+              key={directorate.id}
+              label={`${directorate.acronym} (${directorate.partnerCount})`}
+              onClick={() => setSelectedDivision(directorate.id)}
+              color={selectedDivision === directorate.id ? 'primary' : 'default'}
+              variant={selectedDivision === directorate.id ? 'filled' : 'outlined'}
+              sx={{ 
+                fontWeight: selectedDivision === directorate.id ? 600 : 400,
+                '&:hover': { bgcolor: selectedDivision === directorate.id ? '' : 'rgba(0, 156, 220, 0.1)' } 
+              }}
+            />
           ))}
-        </Grid>
+        </Box>
+        
+        {/* Show the selected unit's full name */}
+        {selectedDivision !== 'all' && (
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 1, fontStyle: 'italic' }}>
+            {directorates.find(d => d.id === selectedDivision)?.name || ''}
+          </Typography>
+        )}
       </Paper>
     </Box>
   );
 };
 
 // Key metrics row component
-const KeyMetricsRow = ({ metrics }) => {
+const KeyMetricsRow = ({ partners }) => {
+  // Calculate metrics from the current filtered partners
+  const dynamicMetrics = useMemo(() => {
+    // Count total and active partners
+    const total = partners.length;
+    const active = partners.filter(p => p.status === 'Active' || !p.status).length;
+    
+    // Count projects and total budget
+    let projectCount = 0;
+    let projectBudget = 0;
+    partners.forEach(partner => {
+      if (partner.projects) {
+        projectCount += partner.projects.length;
+        partner.projects.forEach(project => {
+          projectBudget += project.budget || 0;
+        });
+      }
+    });
+    
+    // Calculate contributions
+    let financialContribution = 0;
+    let inKindContribution = 0;
+    partners.forEach(partner => {
+      if (partner.contributions) {
+        partner.contributions.forEach(contribution => {
+          if (contribution.type === 'Financial') {
+            financialContribution += contribution.value || 0;
+          } else if (contribution.type === 'In-kind') {
+            inKindContribution += contribution.value || 0;
+          }
+        });
+      }
+    });
+    
+    // Count agreements
+    let agreementCount = 0;
+    let expiringAgreements = [];
+    const nearFuture = new Date();
+    nearFuture.setMonth(nearFuture.getMonth() + 3); // Agreements expiring in next 3 months
+    
+    partners.forEach(partner => {
+      if (partner.agreements) {
+        agreementCount += partner.agreements.length;
+        partner.agreements.forEach(agreement => {
+          if (agreement.expiryDate) {
+            const expiryDate = new Date(agreement.expiryDate);
+            if (expiryDate <= nearFuture && expiryDate >= new Date()) {
+              expiringAgreements.push(agreement);
+            }
+          }
+        });
+      }
+    });
+    
+    return {
+      total,
+      active,
+      projects: {
+        total: projectCount,
+        totalBudget: projectBudget
+      },
+      contributions: {
+        financial: financialContribution,
+        inKind: inKindContribution
+      },
+      agreements: {
+        total: agreementCount,
+        expiring: expiringAgreements
+      }
+    };
+  }, [partners]);
+  
   return (
     <Box sx={{ mb: 4 }}>
       <Grid container spacing={3}>
         <Grid item xs={12} sm={6} md={3}>
           <DashboardCard 
             title="Partners" 
-            value={`${metrics.active} / ${metrics.total}`}
+            value={`${dynamicMetrics.active} / ${dynamicMetrics.total}`}
             secondaryText="Active / Total"
             icon={<People fontSize="large" sx={{ color: '#009cdc' }} />}
             color="#009cdc" 
@@ -280,8 +326,8 @@ const KeyMetricsRow = ({ metrics }) => {
         <Grid item xs={12} sm={6} md={3}>
           <DashboardCard 
             title="Projects" 
-            value={metrics.projects.total}
-            secondaryText={`$${(metrics.projects.totalBudget / 1000000).toFixed(1)}M Budget`}
+            value={dynamicMetrics.projects.total}
+            secondaryText={`$${(dynamicMetrics.projects.totalBudget / 1000000).toFixed(1)}M Budget`}
             icon={<Business fontSize="large" sx={{ color: '#f47a42' }} />}
             color="#f47a42" 
           />
@@ -289,8 +335,8 @@ const KeyMetricsRow = ({ metrics }) => {
         <Grid item xs={12} sm={6} md={3}>
           <DashboardCard 
             title="Contributions" 
-            value={`$${(metrics.contributions.financial / 1000000).toFixed(1)}M`}
-            secondaryText={`+ $${(metrics.contributions.inKind / 1000000).toFixed(1)}M In-kind`}
+            value={`$${(dynamicMetrics.contributions.financial / 1000000).toFixed(1)}M`}
+            secondaryText={`+ $${(dynamicMetrics.contributions.inKind / 1000000).toFixed(1)}M In-kind`}
             icon={<AttachMoney fontSize="large" sx={{ color: '#009cdc' }} />}
             color="#009cdc" 
           />
@@ -298,8 +344,8 @@ const KeyMetricsRow = ({ metrics }) => {
         <Grid item xs={12} sm={6} md={3}>
           <DashboardCard 
             title="Agreements" 
-            value={metrics.agreements.total}
-            secondaryText={`${metrics.agreements.expiring.length} Expiring Soon`}
+            value={dynamicMetrics.agreements.total}
+            secondaryText={`${dynamicMetrics.agreements.expiring.length} Expiring Soon`}
             icon={<Description fontSize="large" sx={{ color: '#f47a42' }} />}
             color="#f47a42" 
           />
@@ -328,7 +374,26 @@ const StrategicImpactSection = ({ filteredPartners }) => {
           <Grid item xs={12}>
             <Box sx={{ height: 300, px: 2 }}>
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={getSDGAlignmentData(filteredPartners)} margin={{ top: 10, right: 30, left: 0, bottom: 30 }}>
+                <BarChart data={useMemo(() => {
+                  // Map the numeric SDG IDs to their names
+                  const sdgCounts = {};
+                  filteredPartners.forEach(partner => {
+                    if (partner.sdgAlignment && Array.isArray(partner.sdgAlignment)) {
+                      partner.sdgAlignment.forEach(sdgId => {
+                        const sdgName = `SDG ${sdgId}`;
+                        sdgCounts[sdgName] = (sdgCounts[sdgName] || 0) + 1;
+                      });
+                    }
+                  });
+                  
+                  return Object.keys(sdgCounts)
+                    .map(sdgName => ({
+                      sdg: sdgName,
+                      count: sdgCounts[sdgName],
+                      sdgNumber: parseInt(sdgName.replace('SDG ', ''), 10)
+                    }))
+                    .sort((a, b) => b.count - a.count);
+                }, [filteredPartners])} margin={{ top: 10, right: 30, left: 0, bottom: 30 }}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#eee" />
                   <XAxis 
                     dataKey="sdg" 
@@ -345,10 +410,33 @@ const StrategicImpactSection = ({ filteredPartners }) => {
                   />
                   <RechartTooltip 
                     cursor={{ fill: 'rgba(0, 0, 0, 0.05)' }}
-                    contentStyle={{ 
-                      borderRadius: '6px', 
-                      boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
-                      border: 'none'
+                    content={({ active, payload }) => {
+                      if (active && payload && payload.length) {
+                        const data = payload[0].payload;
+                        const regionName = data.name;
+                        const regionCount = data.count;
+                        const color = getRegionColor(regionName);
+                        
+                        return (
+                          <Paper elevation={3} sx={{ 
+                            p: 1.5, 
+                            border: `1px solid ${color}`,
+                            bgcolor: 'white'
+                          }}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                              {regionIcons[regionName]}
+                              <Typography variant="subtitle2" sx={{ ml: 1, color, fontWeight: 'bold' }}>
+                                {regionName}
+                              </Typography>
+                            </Box>
+                            <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
+                              <span style={{ color: '#666' }}>Partners: </span>
+                              <span style={{ color }}>{regionCount}</span>
+                            </Typography>
+                          </Paper>
+                        );
+                      }
+                      return null;
                     }}
                   />
                   <Legend verticalAlign="top" height={36} />
@@ -357,7 +445,26 @@ const StrategicImpactSection = ({ filteredPartners }) => {
                     name="Partnerships by SDG" 
                     radius={[4, 4, 0, 0]}
                   >
-                    {getSDGAlignmentData(filteredPartners).map((entry, index) => (
+                    {useMemo(() => {
+                      // Map the numeric SDG IDs to their names
+                      const sdgCounts = {};
+                      filteredPartners.forEach(partner => {
+                        if (partner.sdgAlignment && Array.isArray(partner.sdgAlignment)) {
+                          partner.sdgAlignment.forEach(sdgId => {
+                            const sdgName = `SDG ${sdgId}`;
+                            sdgCounts[sdgName] = (sdgCounts[sdgName] || 0) + 1;
+                          });
+                        }
+                      });
+                      
+                      return Object.keys(sdgCounts)
+                        .map(sdgName => ({
+                          sdg: sdgName,
+                          count: sdgCounts[sdgName],
+                          sdgNumber: parseInt(sdgName.replace('SDG ', ''), 10)
+                        }))
+                        .sort((a, b) => b.count - a.count);
+                    }, [filteredPartners]).map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={getSDGColor(entry.sdg)} />
                     ))}
                   </Bar>
@@ -389,7 +496,28 @@ const DistributionSection = ({ filteredPartners }) => {
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
-                  data={getContributionTypeData(filteredPartners)}
+                  data={useMemo(() => {
+                    // Calculate contribution amounts by type
+                    const types = { 'Financial': 0, 'In-kind': 0, 'Other': 0 };
+                    
+                    filteredPartners.forEach(partner => {
+                      if (partner.contributions && Array.isArray(partner.contributions)) {
+                        partner.contributions.forEach(contrib => {
+                          if (contrib.type === 'Financial') {
+                            types['Financial'] += (contrib.amount || 0);
+                          } else if (contrib.type === 'In-kind') {
+                            types['In-kind'] += (contrib.estimatedValue || 0);
+                          } else {
+                            types['Other'] += (contrib.estimatedValue || contrib.amount || 0);
+                          }
+                        });
+                      }
+                    });
+                    
+                    return Object.keys(types)
+                      .filter(key => types[key] > 0) // Only include types with values
+                      .map(key => ({ name: key, value: types[key] }));
+                  }, [filteredPartners])}
                   dataKey="value"
                   nameKey="name"
                   cx="50%"
@@ -399,7 +527,28 @@ const DistributionSection = ({ filteredPartners }) => {
                   paddingAngle={1}
                   label={({name, percent}) => `${name}: ${(percent * 100).toFixed(0)}%`}
                 >
-                  {getContributionTypeData(filteredPartners).map((entry, index) => (
+                  {useMemo(() => {
+                    // Calculate contribution amounts by type
+                    const types = { 'Financial': 0, 'In-kind': 0, 'Other': 0 };
+                    
+                    filteredPartners.forEach(partner => {
+                      if (partner.contributions && Array.isArray(partner.contributions)) {
+                        partner.contributions.forEach(contrib => {
+                          if (contrib.type === 'Financial') {
+                            types['Financial'] += (contrib.amount || 0);
+                          } else if (contrib.type === 'In-kind') {
+                            types['In-kind'] += (contrib.estimatedValue || 0);
+                          } else {
+                            types['Other'] += (contrib.estimatedValue || contrib.amount || 0);
+                          }
+                        });
+                      }
+                    });
+                    
+                    return Object.keys(types)
+                      .filter(key => types[key] > 0) // Only include types with values
+                      .map(key => ({ name: key, value: types[key] }));
+                  }, [filteredPartners]).map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={getChartColor(index)} />
                   ))}
                 </Pie>
@@ -427,8 +576,8 @@ const DistributionSection = ({ filteredPartners }) => {
       <Grid item xs={12} md={6}>
         <Paper sx={{ p: 3, height: '100%', borderRadius: '8px', boxShadow: '0 2px 10px rgba(0,0,0,0.05)' }}>
           <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
-            <PieChartIcon sx={{ color: '#f47a42', mr: 2 }} />
-            <Typography variant="h6" sx={{ fontWeight: 600 }}>
+            <PieChartIcon sx={{ color: themeColors.secondary, mr: 2 }} />
+            <Typography variant="h6" sx={{ fontWeight: 600, color: themeColors.secondary }}>
               Partner Distribution
             </Typography>
           </Box>
@@ -437,7 +586,19 @@ const DistributionSection = ({ filteredPartners }) => {
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
-                  data={getSectorDistributionData(filteredPartners)}
+                  data={useMemo(() => {
+                    // Group partners by type
+                    const typeCounts = {};
+                    filteredPartners.forEach(partner => {
+                      if (partner.type) {
+                        typeCounts[partner.type] = (typeCounts[partner.type] || 0) + 1;
+                      }
+                    });
+                    
+                    return Object.keys(typeCounts)
+                      .map(type => ({ name: type, value: typeCounts[type] }))
+                      .sort((a, b) => b.value - a.value);
+                  }, [filteredPartners])}
                   dataKey="value"
                   nameKey="name"
                   cx="50%"
@@ -447,9 +608,32 @@ const DistributionSection = ({ filteredPartners }) => {
                   paddingAngle={1}
                   label={({name, percent}) => `${name}: ${(percent * 100).toFixed(0)}%`}
                 >
-                  {getSectorDistributionData(filteredPartners).map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={getChartColor(index + 3)} />
-                  ))}
+                  {useMemo(() => {
+                    // Group partners by type
+                    const typeCounts = {};
+                    filteredPartners.forEach(partner => {
+                      if (partner.type) {
+                        typeCounts[partner.type] = (typeCounts[partner.type] || 0) + 1;
+                      }
+                    });
+                    
+                    return Object.keys(typeCounts)
+                      .map(type => ({ name: type, value: typeCounts[type] }))
+                      .sort((a, b) => b.value - a.value);
+                  }, [filteredPartners]).map((entry, index) => {
+                    // Partner type colors based on the theme
+                    const partnerTypeColors = {
+                      'Private Sector': themeColors.primary,        // Blue #009cdc
+                      'Government': themeColors.secondary,        // Orange #f47a42
+                      'NGO': '#4caf50',                          // Green
+                      'Academic': '#9c27b0',                      // Purple
+                      'International Organization': '#ff9800'     // Orange/Amber
+                    };
+                    
+                    // Use the dedicated color for the partner type or fall back to chart colors
+                    const color = partnerTypeColors[entry.name] || getChartColor(index);
+                    return <Cell key={`cell-${index}`} fill={color} />;
+                  })}
                 </Pie>
                 <RechartTooltip 
                   contentStyle={{ 
@@ -479,8 +663,8 @@ const GeographicSection = ({ filteredPartners }) => {
     <Box sx={{ mb: 4 }}>
       <Paper sx={{ p: 3, borderRadius: '8px', boxShadow: '0 2px 10px rgba(0,0,0,0.05)' }}>
         <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
-          <Public sx={{ color: '#009cdc', mr: 2 }} />
-          <Typography variant="h6" sx={{ fontWeight: 600 }}>
+          <Public sx={{ color: themeColors.primary, mr: 2 }} />
+          <Typography variant="h6" sx={{ fontWeight: 600, color: themeColors.primary }}>
             Geographic Distribution
           </Typography>
         </Box>
@@ -490,7 +674,19 @@ const GeographicSection = ({ filteredPartners }) => {
             <Box sx={{ height: 400, px: 2 }}>
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart 
-                  data={getRegionalDistributionData(filteredPartners)} 
+                  data={useMemo(() => {
+                    // Group partners by region
+                    const regionCounts = {};
+                    filteredPartners.forEach(partner => {
+                      if (partner.region) {
+                        regionCounts[partner.region] = (regionCounts[partner.region] || 0) + 1;
+                      }
+                    });
+                    
+                    return Object.keys(regionCounts)
+                      .map(region => ({ name: region, count: regionCounts[region] }))
+                      .sort((a, b) => b.count - a.count);
+                  }, [filteredPartners])} 
                   layout="vertical"
                   margin={{ top: 5, right: 30, left: 50, bottom: 5 }}
                 >
@@ -502,28 +698,117 @@ const GeographicSection = ({ filteredPartners }) => {
                   />
                   <YAxis 
                     dataKey="name" 
-                    type="category" 
-                    tick={{ fontSize: 12 }}
+                    type="category"
                     axisLine={{ stroke: '#ddd' }}
                     tickLine={{ stroke: '#ddd' }}
+                    tick={(props) => {
+                      const { x, y, payload } = props;
+                      const regionName = payload.value;
+                      const regionIcon = regionIcons[regionName];
+                      
+                      return (
+                        <g transform={`translate(${x},${y})`}>
+                          <foreignObject x="-40" y="-12" width="40" height="24">
+                            <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', height: '100%' }}>
+                              {regionIcon}
+                            </div>
+                          </foreignObject>
+                          <text x="-45" y="4" textAnchor="end" fill="#666" style={{ fontSize: '12px' }}>
+                            {regionName}
+                          </text>
+                        </g>
+                      );
+                    }}
                   />
                   <RechartTooltip 
                     cursor={{ fill: 'rgba(0, 0, 0, 0.05)' }}
-                    contentStyle={{ 
-                      borderRadius: '6px', 
-                      boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
-                      border: 'none'
+                    content={({ active, payload }) => {
+                      if (active && payload && payload.length) {
+                        const data = payload[0].payload;
+                        const regionName = data.name;
+                        const regionCount = data.count;
+                        const color = getRegionColor(regionName);
+                        
+                        return (
+                          <Paper elevation={3} sx={{ 
+                            p: 1.5, 
+                            border: `1px solid ${color}`,
+                            bgcolor: 'white'
+                          }}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                              {regionIcons[regionName]}
+                              <Typography variant="subtitle2" sx={{ ml: 1, color, fontWeight: 'bold' }}>
+                                {regionName}
+                              </Typography>
+                            </Box>
+                            <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
+                              <span style={{ color: '#666' }}>Partners: </span>
+                              <span style={{ color }}>{regionCount}</span>
+                            </Typography>
+                          </Paper>
+                        );
+                      }
+                      return null;
                     }}
                   />
-                  <Legend />
+                  <Legend 
+                    content={(props) => {
+                      const { payload } = props;
+                      
+                      return (
+                        <Box sx={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', mt: 2 }}>
+                          {payload.map((entry, index) => {
+                            const regionName = entry.payload.name;
+                            const color = getRegionColor(regionName);
+                            
+                            return (
+                              <Box key={`legend-${index}`} sx={{ 
+                                display: 'flex', 
+                                alignItems: 'center', 
+                                mx: 1.5, 
+                                mb: 1,
+                                p: 0.5,
+                                border: `1px solid ${color}`,
+                                borderRadius: 1,
+                                bgcolor: `${color}10`
+                              }}>
+                                {regionIcons[regionName]}
+                                <Typography variant="caption" sx={{ fontWeight: 500, color: color }}>
+                                  {regionName}
+                                </Typography>
+                              </Box>
+                            );
+                          })}
+                        </Box>
+                      );
+                    }}
+                  />
                   <Bar 
-                    dataKey="value" 
+                    dataKey="count" 
                     name="Partners by Region" 
-                    fill="#009cdc"
+                    fill={themeColors.primary}
                     radius={[0, 4, 4, 0]}
                     barSize={24}
+                    label={{
+                      position: 'right',
+                      formatter: (value) => value,
+                      fill: '#666',
+                      fontWeight: 'bold'
+                    }}
                   >
-                    {getRegionalDistributionData(filteredPartners).map((entry, index) => (
+                    {useMemo(() => {
+                      // Group partners by region
+                      const regionCounts = {};
+                      filteredPartners.forEach(partner => {
+                        if (partner.region) {
+                          regionCounts[partner.region] = (regionCounts[partner.region] || 0) + 1;
+                        }
+                      });
+                      
+                      return Object.keys(regionCounts)
+                        .map(region => ({ name: region, count: regionCounts[region] }))
+                        .sort((a, b) => b.count - a.count);
+                    }, [filteredPartners]).map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={getRegionColor(entry.name)} />
                     ))}
                   </Bar>
@@ -532,6 +817,193 @@ const GeographicSection = ({ filteredPartners }) => {
             </Box>
           </Grid>
         </Grid>
+      </Paper>
+    </Box>
+  );
+};
+
+// Partners List Section component
+const PartnersListSection = ({ partners, selectedDivision, directorates, history, resetToSampleData }) => {
+  // Get name of selected division/sector for display
+  const sectionTitle = useMemo(() => {
+    if (selectedDivision === 'all') {
+      return 'All Partners';
+    } else {
+      const directorate = directorates.find(d => d.id === selectedDivision);
+      return directorate ? `${directorate.name} Partners` : 'Partners';
+    }
+  }, [selectedDivision, directorates]);
+
+  // Color for the section heading
+  const sectionColor = useMemo(() => {
+    if (selectedDivision === 'all') {
+      return '#009cdc';
+    } else {
+      const directorate = directorates.find(d => d.id === selectedDivision);
+      return directorate ? directorate.color : '#009cdc';
+    }
+  }, [selectedDivision, directorates]);
+
+  // State for pagination
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(5);
+
+  // Handle page change
+  const handleChangePage = (event, newPage) => {
+    setPage(newPage);
+  };
+
+  // Calculate visible partners (paginated)
+  const visiblePartners = partners.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
+  
+  return (
+    <Box sx={{ mb: 4 }}>
+      <Paper sx={{ p: 3, borderRadius: '8px', boxShadow: '0 2px 10px rgba(0,0,0,0.05)' }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            <People sx={{ color: sectionColor, mr: 2 }} />
+            <Typography variant="h6" sx={{ fontWeight: 600, color: sectionColor }}>
+              {sectionTitle}
+            </Typography>
+            <Tooltip title="Partners associated with the selected division" arrow placement="right">
+              <Info sx={{ ml: 1, fontSize: 18, color: '#999999' }} />
+            </Tooltip>
+          </Box>
+          <Button
+            variant="contained"
+            size="small"
+            startIcon={<Refresh />}
+            onClick={resetToSampleData}
+            sx={{ bgcolor: '#009cdc', '&:hover': { bgcolor: '#0089c3' } }}
+          >
+            Refresh Partners
+          </Button>
+        </Box>
+
+
+        
+        {partners.length > 0 ? (
+          <>
+            <Box sx={{ overflowX: 'auto' }}>
+              <List sx={{ width: '100%', bgcolor: 'background.paper' }}>
+                {visiblePartners.map((partner) => (
+                  <React.Fragment key={partner.id}>
+                    <ListItem 
+                      alignItems="flex-start"
+                      button
+                      onClick={() => history.push(`/partners/${partner.id}`)}
+                      sx={{ 
+                        borderRadius: '4px',
+                        '&:hover': {
+                          backgroundColor: 'rgba(0, 0, 0, 0.04)'
+                        },
+                        mb: 1
+                      }}
+                    >
+                      <ListItemAvatar>
+                        <Avatar sx={{ bgcolor: `${partner.type === 'Private Sector' ? '#009cdc' : 
+                                        partner.type === 'Government' ? '#f47a42' : 
+                                        partner.type === 'NGO' ? '#4caf50' : 
+                                        partner.type === 'Academic' ? '#9c27b0' : 
+                                        partner.type === 'UN Agency' ? '#ffeb3b' : '#ff9800'}` }}>
+                          {partner.name.charAt(0)}
+                        </Avatar>
+                      </ListItemAvatar>
+                      <ListItemText
+                        primary={
+                          <Typography variant="subtitle1" fontWeight="medium">
+                            {partner.name}
+                          </Typography>
+                        }
+                        secondary={
+                          <React.Fragment>
+                            <Typography variant="body2" component="span" color="text.primary">
+                              {partner.type}
+                            </Typography>
+                            <Typography variant="body2" component="span" color="text.secondary" sx={{ display: 'block' }}>
+                              {partner.region}, {partner.country} • Sector: {partner.sector}
+                            </Typography>
+                            {partner.sdgAlignment && partner.sdgAlignment.length > 0 && (
+                              <Box sx={{ mt: 0.5, display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                                {partner.sdgAlignment.slice(0, 5).map((sdg, i) => (
+                                  <Chip 
+                                    key={i} 
+                                    label={`SDG ${sdg}`} 
+                                    size="small" 
+                                    sx={{ 
+                                      height: 22, 
+                                      fontSize: 11,
+                                      bgcolor: `${getSDGColor(sdg)}20`, 
+                                      color: getSDGColor(sdg),
+                                      '& .MuiChip-label': { px: 1 }
+                                    }} 
+                                  />
+                                ))}
+                                {partner.sdgAlignment.length > 5 && (
+                                  <Chip 
+                                    label={`+${partner.sdgAlignment.length - 5}`} 
+                                    size="small" 
+                                    sx={{ 
+                                      height: 22, 
+                                      fontSize: 11,
+                                      bgcolor: '#eee', 
+                                      '& .MuiChip-label': { px: 1 }
+                                    }} 
+                                  />
+                                )}
+                              </Box>
+                            )}
+                          </React.Fragment>
+                        }
+                      />
+                      <Chip 
+                        label={partner.status || 'Active'} 
+                        size="small" 
+                        color={(partner.status === 'Active' || !partner.status) ? 'success' : 'default'}
+                        variant="outlined"
+                        sx={{ ml: 1, alignSelf: 'flex-start', mt: 2 }}
+                      />
+                    </ListItem>
+                    {visiblePartners.indexOf(partner) < visiblePartners.length - 1 && (
+                      <Divider component="li" sx={{ my: 0.5 }} />
+                    )}
+                  </React.Fragment>
+                ))}
+              </List>
+            </Box>
+            
+            <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2, mb: 1 }}>
+              <Button 
+                disabled={page === 0} 
+                onClick={() => handleChangePage(null, page - 1)}
+                sx={{ mr: 1, color: sectionColor, borderColor: sectionColor }}
+                variant="outlined"
+                size="small"
+              >
+                Previous
+              </Button>
+              <Typography variant="body2" sx={{ display: 'flex', alignItems: 'center', mx: 2 }}>
+                Page {page + 1} of {Math.ceil(partners.length / rowsPerPage)}
+              </Typography>
+              <Button 
+                disabled={page >= Math.ceil(partners.length / rowsPerPage) - 1} 
+                onClick={() => handleChangePage(null, page + 1)}
+                sx={{ ml: 1, color: sectionColor, borderColor: sectionColor }}
+                variant="outlined"
+                size="small"
+              >
+                Next
+              </Button>
+            </Box>
+          </>
+        ) : (
+          <Box sx={{ p: 3, textAlign: 'center' }}>
+            <Warning sx={{ color: '#999999', fontSize: 40, mb: 1 }} />
+            <Typography variant="body1" color="#666666">
+              No partners found for the selected division and filters
+            </Typography>
+          </Box>
+        )}
       </Paper>
     </Box>
   );
@@ -812,12 +1284,11 @@ const NetworkSection = ({ enhancedNetworkData, handleNodeClick, selectedNode, hi
 
 // Main Dashboard component
 const Dashboard = () => {
-  const { partners, unidoStaff } = useData();
+  // Get partners data and resetToSampleData function from DataContext
+  const { partners, resetToSampleData } = useData();
   const history = useHistory();
   
   // State for filters, tabs, and selected elements
-  const [mainTabValue, setMainTabValue] = useState(0);
-  const [analysisTabValue, setAnalysisTabValue] = useState(0);
   const [selectedNode, setSelectedNode] = useState(null);
   
   // Network filters state
@@ -838,28 +1309,78 @@ const Dashboard = () => {
     return calculateDashboardMetrics(partners || []);
   }, [partners]);
   
-  // Sample directorates data (replace with actual data)
-  const directorates = useMemo(() => [
-    { id: 'dir1', name: 'External Relations', color: '#009cdc', partnerCount: 58 },
-    { id: 'dir2', name: 'Policy & Programme', color: '#f47a42', partnerCount: 42 },
-    { id: 'dir3', name: 'Technical Cooperation', color: '#4caf50', partnerCount: 67 },
-    { id: 'dir4', name: 'Digitalization', color: '#9c27b0', partnerCount: 35 },
-    { id: 'dir5', name: 'Finance', color: '#ff9800', partnerCount: 29 },
-    { id: 'dir6', name: 'Human Resources', color: '#e91e63', partnerCount: 12 }
-  ], []);
+  // Define the official UNIDO organizational units
+  const directorates = useMemo(() => {
+    // Create a mapping of sectors to official UNIDO units
+    // and count partners for each unit
+    const unitCounts = {};
+    
+    // Define the actual organizational units
+    const unidoUnits = [
+      { id: 'odg', name: 'Office of the Director General', acronym: 'ODG' },
+      { id: 'glo', name: 'Directorate of Global Partnerships and External Relations', acronym: 'GLO' },
+      { id: 'tcs', name: 'Technical Cooperation and Sustainable Industrial Development', acronym: 'TCS' },
+      { id: 'iet', name: 'Directorate of SDG Innovation and Economic Transformation', acronym: 'IET' },
+      { id: 'spp', name: 'Directorate of Strategic Planning, Programming and Policy', acronym: 'SPP' }
+    ];
+    
+    // Initialize counts for each unit
+    unidoUnits.forEach(unit => {
+      unitCounts[unit.id] = 0;
+    });
+    
+    // Map existing sectors to organizational units and count
+    partners.forEach(partner => {
+      if (partner.sector) {
+        // Simple mapping - in a real app this would be more sophisticated
+        let unitId;
+        if (partner.sector.includes('Policy')) {
+          unitId = 'spp';
+        } else if (partner.sector.includes('Sustainable') || partner.sector.includes('Industrial')) {
+          unitId = 'tcs';
+        } else if (partner.sector.includes('Innovation') || partner.sector.includes('Economic')) {
+          unitId = 'iet';
+        } else if (partner.sector.includes('Global') || partner.sector.includes('External')) {
+          unitId = 'glo';
+        } else {
+          unitId = 'odg'; // Default
+        }
+        
+        unitCounts[unitId] += 1;
+      }
+    });
+    
+    // Create final directorate objects with correct names and counts
+    return unidoUnits.map(unit => ({
+      id: unit.id,
+      name: unit.name,
+      acronym: unit.acronym,
+      color: '#009cdc',
+      partnerCount: unitCounts[unit.id]
+    }));
+  }, [partners]);
   
   // Filter partners based on selected filters and division
   const filteredPartners = useMemo(() => {
-    const divisionFilter = selectedDivision !== 'all' 
-      ? { ...filters, directorate: selectedDivision } 
-      : filters;
+    // Get base filtered partners by regular filters
+    let filtered = filterPartners(partners || [], filters, [], directorates);
     
-    return filterPartners(partners || [], divisionFilter, unidoStaff || []);
-  }, [partners, filters, unidoStaff, selectedDivision]);
+    // If a specific division/sector is selected, further filter the partners
+    if (selectedDivision !== 'all') {
+      // Find the sector name corresponding to the selected division id
+      const selectedDirectorate = directorates.find(dir => dir.id === selectedDivision);
+      if (selectedDirectorate) {
+        // Filter partners by the sector name of the selected directorate
+        filtered = filtered.filter(partner => partner.sector === selectedDirectorate.name);
+      }
+    }
+    
+    return filtered;
+  }, [partners, filters, selectedDivision, directorates]);
   
-  // Process network data for visualization
+  // Process network data for visualization - simplified version for sample data
   const networkData = useMemo(() => {
-    // First create partner nodes from filtered partners
+    // Process filtered partners into network nodes
     const partnerNodes = (filteredPartners || []).map(partner => ({
       id: partner.id,
       name: partner.name,
@@ -867,68 +1388,95 @@ const Dashboard = () => {
       sector: partner.sector,
       region: partner.region,
       country: partner.country,
-      contactPerson: partner.mainContactPerson || partner.contactPerson,
+      contactPerson: partner.mainContactPerson,
       status: partner.status || 'Active',
       connections: partner.connections || [],
       nodeType: 'partner',
-      sdgs: partner.sdgs || []
+      sdgs: partner.sdgAlignment || []
     }));
     
-    // Create a set of staff IDs that are actually used as contacts
-    const usedStaffIds = new Set(partnerNodes.map(node => node.contactPerson).filter(Boolean));
+    // Create more realistic UNIDO staff nodes for the network visualization
+    const staffNodes = [];
     
-    // Add UNIDO staff nodes for those who are contacts for partners
-    const staffNodes = (unidoStaff || [])
-      .filter(staff => usedStaffIds.has(staff.id) && staff.unit) // Make sure staff has a unit
-      .map(staff => ({
-        id: staff.id,
-        name: staff.name,
-        title: staff.title || '',
-        email: staff.email || '',
-        nodeType: 'staff',
-        directorate: staff.unit?.directorate || 'Unknown',
-        division: staff.unit?.division || 'Unknown',
-        location: staff.location || ''
-      }));
+    // Define a set of realistic UNIDO staff names by directorate
+    const staffNames = {
+      'odg': ['Maria Rodriguez', 'John Chen', 'Fatima Al-Zahra'],
+      'iet': ['Aisha Mbeki', 'Carlos Fernandez', 'Michael Takahashi'],
+      'tcs': ['Elena Petrov', 'Ahmed Hassan', 'Priya Singh'],
+      'glo': ['David Kim', 'Sara Nguyen', 'Roberto Martinez'],
+      'spp': ['Anna Kowalski', 'Li Wei', 'Nadia Ibrahim']
+    };
+    
+    // Create staff nodes with realistic names based on directorate
+    const staffMap = new Map();
+    filteredPartners.forEach(partner => {
+      if (partner.mainContactPerson && !staffMap.has(partner.mainContactPerson)) {
+        // Map the partner sector to a directorate
+        let directorate = 'glo';
+        if (partner.sector === 'Directorate of SDG Innovation and Economic Transformation') {
+          directorate = 'iet';
+        } else if (partner.sector === 'Technical Cooperation and Sustainable Industrial Development') {
+          directorate = 'tcs';
+        } else if (partner.sector === 'Directorate of Strategic Planning, Programming and Policy') {
+          directorate = 'spp';
+        } else if (partner.sector === 'Office of the Director General') {
+          directorate = 'odg';
+        }
+        
+        // Get a staff name based on the staff ID and directorate
+        const staffId = parseInt(partner.mainContactPerson.replace('staff_', '')) || 0;
+        const nameIndex = staffId % (staffNames[directorate]?.length || 1);
+        const staffName = staffNames[directorate]?.[nameIndex] || 'UNIDO Staff';
+        
+        staffMap.set(partner.mainContactPerson, {
+          id: partner.mainContactPerson,
+          name: staffName,
+          nodeType: 'staff',
+          directorate: directorate,
+          division: directorate === 'odg' ? 'Office of the Director General' : `${directorate.toUpperCase()} Division`
+        });
+      }
+    });
+    staffMap.forEach(staff => staffNodes.push(staff));
     
     // Combine all nodes
     const nodes = [...partnerNodes, ...staffNodes];
     
-    // Create links between partners and their UNIDO contacts
+    // Create links between partners and staff
     const links = [];
-    
-    // Create a Set of all node IDs for quick lookup
-    const nodeIds = new Set(nodes.map(node => node.id));
-    
-    // Only create links if both the source and target nodes exist
     partnerNodes.forEach(partner => {
-      if (partner.contactPerson && nodeIds.has(partner.contactPerson)) {
+      if (partner.contactPerson && staffMap.has(partner.contactPerson)) {
         links.push({
           source: partner.id,
           target: partner.contactPerson,
           type: 'contact-relationship',
-          strength: 2 // Strong connection between partner and primary contact
+          strength: 2
+        });
+      }
+      
+      // Add partner-to-partner connections if they exist
+      if (partner.connections && Array.isArray(partner.connections)) {
+        partner.connections.forEach(targetId => {
+          if (filteredPartners.some(p => p.id === targetId)) {
+            links.push({
+              source: partner.id,
+              target: targetId,
+              type: 'partnership',
+              strength: 1
+            });
+          }
         });
       }
     });
     
     return { nodes, links };
-  }, [filteredPartners, unidoStaff]);
+  }, [filteredPartners]);
   
   // Enhanced network data with colors and additional properties
   const enhancedNetworkData = useMemo(() => {
     return enhanceLocalNetworkData(networkData);
   }, [networkData]);
   
-  // Handle main tab change
-  const handleMainTabChange = (event, newValue) => {
-    setMainTabValue(newValue);
-  };
-
-  // Handle analysis tab change
-  const handleAnalysisTabChange = (event, newValue) => {
-    setAnalysisTabValue(newValue);
-  };
   
   // Handle filter change
   const handleFilterChange = (filterType, value) => {
@@ -967,7 +1515,16 @@ const Dashboard = () => {
       />
       
       {/* Top Metrics Cards */}
-      <KeyMetricsRow metrics={metrics} />
+      <KeyMetricsRow partners={filteredPartners} />
+      
+      {/* Partners List Section - Shows partners based on filters */}
+      <PartnersListSection 
+        partners={filteredPartners} 
+        selectedDivision={selectedDivision}
+        directorates={directorates}
+        history={history}
+        resetToSampleData={resetToSampleData}
+      />
       
       {/* UNIDO Division Intelligence Panel */}
       <DivisionsPanel 
@@ -976,6 +1533,7 @@ const Dashboard = () => {
         setSelectedDivision={setSelectedDivision} 
       />
       
+
       {/* Strategic Impact Section */}
       <StrategicImpactSection filteredPartners={filteredPartners} />
       

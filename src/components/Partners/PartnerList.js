@@ -4,11 +4,10 @@ import {
   Container, Typography, Paper, Table, TableBody, TableCell, TableContainer,
   TableHead, TableRow, TablePagination, Chip, TextField, InputAdornment,
   Box, Button, Grid, FormControl, InputLabel, Select, MenuItem, Collapse,
-  IconButton, Divider, OutlinedInput, Checkbox, ListItemText
+  OutlinedInput, Checkbox, ListItemText
 } from '@mui/material';
 import {
-  Search, GetApp, FilterList, Clear, KeyboardArrowUp, KeyboardArrowDown,
-  Add
+  Search, GetApp, FilterList, Clear, KeyboardArrowUp, KeyboardArrowDown, Refresh
 } from '@mui/icons-material';
 import { useData } from '../../contexts/DataContext';
 import { exportToExcel } from '../../utils/excelUtils';
@@ -27,7 +26,7 @@ const MenuProps = {
 
 const PartnerList = () => {
   const history = useHistory();
-  const { partners } = useData();
+  const { partners, resetToSampleData } = useData();
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [searchTerm, setSearchTerm] = useState('');
@@ -120,6 +119,15 @@ const PartnerList = () => {
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
         <Typography variant="h4">Partnership Database</Typography>
         <Box>
+          <Button 
+            variant="contained" 
+            color="primary"
+            startIcon={<Refresh />}
+            onClick={resetToSampleData}
+            sx={{ mr: 1, bgcolor: '#009cdc' }}
+          >
+            Refresh Partners
+          </Button>
           <Button 
             variant="contained" 
             startIcon={<GetApp />} 

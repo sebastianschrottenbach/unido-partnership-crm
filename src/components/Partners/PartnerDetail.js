@@ -2,14 +2,14 @@ import React, { useState } from 'react';
 import { useParams, useHistory } from 'react-router-dom';
 import { 
   Container, Typography, Paper, Box, Grid, Chip, Button, 
-  Tabs, Tab, Divider, List, ListItem, ListItemText, Card, 
-  CardContent, TextField, IconButton, Avatar, Dialog, DialogTitle,
+  Tabs, Tab, Divider, List, ListItem, Card, 
+  CardContent, TextField, Dialog, DialogTitle,
   DialogContent, DialogActions, MenuItem, Select, FormControl, InputLabel,
-  Table, TableBody, TableCell, TableContainer, TableHead, TableRow
+  Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Avatar
 } from '@mui/material';
 import { 
   ArrowBack, Edit, Delete, Add, Business, Public, Phone, 
-  Email, CalendarToday, Flag, CheckCircle, Assignment, Save, Cancel 
+  Email, CalendarToday, Assignment, Save, Cancel 
 } from '@mui/icons-material';
 import { useData } from '../../contexts/DataContext';
 import { sdgs } from '../../data/sampleData';
